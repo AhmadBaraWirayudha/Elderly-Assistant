@@ -120,7 +120,7 @@ Open the `.txt` files inside `rag/kb/` and fill in your real information:
 | `howto.txt` | Device guides for TV, phone, Wi-Fi, etc. |
 | `faqs.txt` | Common questions and answers in plain language |
 
-You can add new `.txt` files too — they are picked up automatically.
+You can add new `.txt` files too, they are picked up automatically.
 
 ### Step 6 - Run the app
 
