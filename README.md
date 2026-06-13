@@ -1,4 +1,4 @@
-# Elderly Assistant — Simplest AI Dashboard for Elderly
+# Elderly Assistan, Simple AI Dashboard for Elderly
 
 > **Maju Bareng AI 2025 · Hacktiv8 × Google**
 >
