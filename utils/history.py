@@ -1,24 +1,49 @@
 from __future__ import annotations
-
 from typing import List, Dict
+import sqlite3
+from datetime import datetime
+import config
+
+def _conn() -> sqlite3.Connection:
+    return sqlite3.connect(config.HISTORY_DB)
+
+def init_db() -> None:
+    with _conn() as conn:
+        conn.execute("""
+            CREATE TABLE IF NOT EXISTS chat_history (
+                id          INTEGER PRIMARY KEY AUTOINCREMENT,
+                ts          TEXT    NOT NULL,
+                query       TEXT    NOT NULL,
+                answer      TEXT    NOT NULL,
+                model_used  TEXT    NOT NULL DEFAULT 'flash'
+            )
+        """)
+        conn.commit()
+
+def save_turn(query: str, answer: str, model_used: str = "flash") -> None:
+    init_db()
+    with _conn() as conn:
+        conn.execute(
+            "INSERT INTO chat_history (ts, query, answer, model_used) VALUES (?, ?, ?, ?)",
+            (datetime.now().isoformat(timespec="seconds"), query, answer, model_used),
+        )
+        conn.commit()
 
 
-def add_turn(history: list[dict], user_text: str, assistant_text: str) -> list[dict]:
-    history.append({"role": "user", "content": user_text})
-    history.append({"role": "assistant", "content": assistant_text})
-    return history
+def get_recent(limit: int = 10) -> list[tuple]:
+    """Return [(ts, query, answer, model_used), ...] newest first."""
+    init_db()
+    with _conn() as conn:
+        rows = conn.execute(
+            "SELECT ts, query, answer, model_used FROM chat_history "
+            "ORDER BY id DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+    return rows
 
 
-def recent_messages(history: list[dict], limit: int = 10) -> list[dict]:
-    if limit <= 0:
-        return []
-    return history[-limit:]
-
-
-def history_as_prompt(history: list[dict], limit: int = 6) -> str:
-    items = recent_messages(history, limit=limit * 2)
-    lines: list[str] = []
-    for msg in items:
-        role = "User" if msg["role"] == "user" else "Assistant"
-        lines.append(f"{role}: {msg['content']}")
-    return "\n".join(lines)
+def clear_history() -> None:
+    init_db()
+    with _conn() as conn:
+        conn.execute("DELETE FROM chat_history")
+        conn.commit()
