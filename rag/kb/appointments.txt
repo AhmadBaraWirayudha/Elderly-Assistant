@@ -1,1 +1,6 @@
+Appointment helper notes
 
+- Store only the essential details: date, time, place, and purpose.
+- Repeat the appointment back in a simple sentence.
+- If the date is near, remind the user to prepare ID, notes, and transport.
+- Use absolute dates when possible.

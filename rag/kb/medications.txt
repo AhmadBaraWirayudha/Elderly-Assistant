@@ -1,1 +1,7 @@
+Medication helper notes
 
+- Keep medicine names short and consistent.
+- Remind the user to follow the label or doctor instructions.
+- If the user asks for dosing changes, say to confirm with a doctor or pharmacist.
+- When possible, show timing in simple steps: morning, afternoon, evening, bedtime.
+- For suspicious side effects, recommend urgent medical help.

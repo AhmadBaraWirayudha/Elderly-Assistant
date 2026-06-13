@@ -1,1 +1,6 @@
+Contacts helper notes
 
+- Keep names, relation, and phone numbers short.
+- Repeat the contact in a clean format.
+- If the user asks for emergency help, tell them to call local emergency services or a trusted family member immediately.
+- Avoid overexplaining.

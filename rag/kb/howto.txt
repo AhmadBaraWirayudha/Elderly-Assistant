@@ -1,1 +1,7 @@
+How-to helper notes
 
+- Give one action at a time.
+- Prefer step-by-step instructions.
+- Keep each step very short.
+- Confirm completion before moving to the next step.
+- If the instruction depends on a device brand, ask for the device name.

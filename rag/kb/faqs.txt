@@ -1,1 +1,7 @@
+FAQ helper notes
 
+- Use plain language.
+- If the answer is not in the knowledge base, say so clearly.
+- Offer a short next step.
+- Avoid long paragraphs.
+- Keep safety and privacy in mind.
