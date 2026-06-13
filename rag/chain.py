@@ -1,9 +1,13 @@
 from __future__ import annotations
-
+import config
 import os
 from dataclasses import dataclass
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
 from langchain.chains import ConversationalRetrievalChain
+from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_core.documents import Document
+from langchain_core.messages import HumanMessage, AIMessage
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_community.vectorstores import FAISS
 from langchain_community.document_loaders import DirectoryLoader, TextLoader
@@ -12,26 +16,47 @@ from langchain_huggingface import HuggingFaceEmbeddings
 import os
 from config import GEMINI_API_KEY, GEMINI_MODELS, KB_PATH, FAISS_PATH, MAX_HISTORY
 
+# ── System prompt ────────────────────────────────────────────────────────────
+
+SYSTEM_PROMPT = """You are a warm, caring assistant helping elderly people.
+
+Rules you must always follow:
+- Use short, simple sentences. Maximum 4 sentences by default.
+- Speak plainly — no jargon, no medical diagnoses.
+- If someone asks about a medication, only read what is written on the label or in the knowledge base. Never prescribe doses.
+- If you are not sure, say so kindly and suggest they ask a family member or doctor.
+- Be patient and reassuring. Never make the person feel confused or rushed.
+
+Use this context from the personal knowledge base when relevant:
+{context}"""
+
 @dataclass
 class RetrievedContext:
     text: str
     score: float
     sources: list[str]
 
+# ── Embeddings & vectorstore ─────────────────────────────────────────────────
+
+def _embeddings() -> GoogleGenerativeAIEmbeddings:
+    return GoogleGenerativeAIEmbeddings(
+        model="models/embedding-001",
+        google_api_key=config.GEMINI_API_KEY,
+    )
 def embeddings() -> HuggingFaceEmbeddings:
     return HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
-def _embeddings():
-    return GoogleGenerativeAIEmbeddings(
-        model="models/embedding-001",
-        google_api_key=GEMINI_API_KEY,
-    )
 
 def load_vectorstore(force_rebuild: bool = False) -> FAISS:
+    """Load existing index or build from KB documents."""
     emb = _embeddings()
     
     if os.path.exists(FAISS_PATH) and not force_rebuild:
-        return FAISS.load_local(FAISS_PATH, emb, allow_dangerous_deserialization=True)
+        try:
+            return FAISS.load_local(FAISS_PATH, emb, allow_dangerous_deserialization=True)
+        except Exception:
+            pass  # Fall through and rebuild
+    os.makedirs(config.KB_PATH, exist_ok=True)
     loader = DirectoryLoader(KB_PATH, glob="**/*.txt", loader_cls=TextLoader, loader_kwargs={"encoding": "utf-8"}, show_progress=True, use_multithreading=False,)
     docs = loader.load()
     splitter = RecursiveCharacterTextSplitter(chunk_size=700, chunk_overlap=120)
