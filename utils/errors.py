@@ -1,4 +1,4 @@
-
+from __future__ import annotations
 MESSAGES = {
     "stt_failed":       "I couldn't hear that clearly. Press the microphone button and try again.",
     "image_unclear":    "The photo is hard to read. Try moving closer or to better light.",
