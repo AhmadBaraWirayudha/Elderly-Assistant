@@ -1,11 +1,10 @@
-# Family AI Assistant
+# Elderly Assistant
 
 Final project prototype for **Maju Bareng AI by Hacktiv8 partnered with Google**.
 
 Goal:
 - one-screen assistant
 - simple enough for elderly users
-- playful enough for kindergarten children
 - fast response path first
 - image and sound support
 - RAG over a small curated knowledge base
@@ -14,7 +13,6 @@ Goal:
 
 - Streamlit UI
 - Elderly mode
-- Kindergarten mode
 - PIN gate
 - LangChain + FAISS RAG
 - Gemini router with fast / standard / reasoning models
@@ -92,7 +90,6 @@ GEMINI_API_KEY=your_key_here
 ```
 
 Optional overrides:
-- `APP_MODE=elderly` or `APP_MODE=kid`
 - `PIN_ENABLED=1`
 - `ACCESS_PIN_HASH=<sha256 hash>`
 - `GEMINI_MODEL_FLASH_LITE=gemini-2.5-flash-lite`
