@@ -1,4 +1,4 @@
-# 🏠 ElderAI — Simplest AI Dashboard for Elderly
+# Elderly Assistant — Simplest AI Dashboard for Elderly
 
 > **Maju Bareng AI 2025 · Hacktiv8 × Google**
 >
@@ -6,10 +6,10 @@
 
 ---
 
-## What Is ElderAI?
+## What Is this?
 
 Most AI tools overwhelm elderly users with dense menus, tiny buttons, and walls of text.
-**ElderAI does the opposite.**
+**Elderly Assistant does the opposite.**
 
 One screen. Three big input modes — **Speak, Type, Photo**.
 Every answer is spoken aloud. No confusion. No clutter.
@@ -232,10 +232,4 @@ This prototype solves the core UX problem. Here is where we want to take it:
 
 ## Team
 
-Built for **Maju Bareng AI 2025** — a programme by [Hacktiv8](https://hacktiv8.com) in partnership with Google, bringing AI education and real-world applications to Indonesia.
-
----
-
-## License
-
-MIT — free to use, modify, and distribute.
+Built for **Maju Bareng AI 2025** Final Project — a programme by [Hacktiv8](https://hacktiv8.com) in partnership with Google, bringing AI education and real-world applications to Indonesia.
