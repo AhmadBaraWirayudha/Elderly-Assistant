@@ -1,6 +1,14 @@
+"""
+utils/auth.py — Simple PIN gate.
+
+Change the hash in config.py to match your desired PIN:
+  python -c "import hashlib; print(hashlib.sha256(b'YOUR_PIN').hexdigest())"
+"""
+
 from __future__ import annotations
 import hashlib
 import streamlit as st
+import config
 from config import ACCESS_PIN_HASH, PIN_ENABLED, APP_TITLE
 from utils.errors import friendly_error
 
@@ -9,22 +17,37 @@ def _hash_pin(pin: str) -> str:
     return hashlib.sha256(pin.encode("utf-8")).hexdigest()  # change before use
 
 def check_auth() -> bool:
-    if not PIN_ENABLED:
-        st.session_state.authenticated = True
-        return True
-        
+    """
+    Returns True if the user is authenticated.
+    Renders the PIN form and returns False otherwise.
+    """
     if st.session_state.get("authenticated"):
         return True
 
-    st.title(APP_TITLE)
-    st.subheader("Protected access")
-    pin = st.text_input("Enter your PIN:", type="password", key="_pin")
-    entered = st.button("Enter", use_container_width=True)
-    if entered:
-        if pin and _hash_pin(pin) == ACCESS_PIN_HASH:
-            st.session_state.authenticated = True
-            st.rerun()
-        else:
-            st.error(friendly_error("auth_failed"))
-    return False
+    st.markdown(
+        "<h1 style='text-align:center; font-size:2.5rem;'>👋 ElderAI</h1>",
+        unsafe_allow_html=True,
+    )
+    st.markdown(
+        "<p style='text-align:center; font-size:1.3rem; color:#5f6368;'>"
+        "Your personal AI assistant</p>",
+        unsafe_allow_html=True,
+    )
+    st.divider()
 
+    col_l, col_m, col_r = st.columns([1, 2, 1])
+    with col_m:
+        pin = st.text_input(
+            "Enter your PIN to continue:",
+            type="password",
+            key="_auth_pin",
+            placeholder="e.g. 1234",
+        )
+        if st.button("✅  Enter", use_container_width=True, type="primary"):
+            if hashlib.sha256(pin.encode()).hexdigest() == config.PIN_HASH:
+                st.session_state.authenticated = True
+                st.rerun()
+            else:
+                st.error("Wrong PIN.  Please try again.", icon="🔒")
+
+    return False
