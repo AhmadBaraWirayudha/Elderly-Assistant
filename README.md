@@ -11,11 +11,11 @@
 Most AI tools overwhelm elderly users with dense menus, tiny buttons, and walls of text.
 **Elderly Assistant does the opposite.**
 
-One screen. Three big input modes — **Speak, Type, Photo**.
+One screen. Three big input modes: **Speak, Type, Photo**.
 Every answer is spoken aloud. No confusion. No clutter.
 
 Built on Gemini 2.5 and LangChain RAG, it routes each query to the right model
-automatically: fast and cheap for simple questions, more capable for complex ones — all
+automatically: fast and cheap for simple questions, more capable for complex ones all
 invisible to the user.
 
 ---
@@ -32,7 +32,7 @@ invisible to the user.
 | 📚 **Personal knowledge base** | RAG over your own docs: meds, contacts, appointments, device guides, FAQs |
 | 🔐 **PIN protection** | Simple 4-digit PIN keeps family data private |
 | 💬 **Chat history** | Every conversation saved to SQLite for review |
-| ⚡ **Immediate acknowledgement** | "I heard you" shows before the answer — no silent wait |
+| ⚡ **Immediate acknowledgement** | "I heard you" shows before the answer, no silent wait |
 | 🎨 **Elderly-first design** | 22 px base font · large buttons · high contrast · Google colour palette |
 
 ---
@@ -69,18 +69,18 @@ User
 ### Prerequisites
 
 - Python 3.10 or higher
-- A Gemini API key — get one free at [Google AI Studio](https://aistudio.google.com/)
+- A Gemini API key, get one free at [Google AI Studio](https://aistudio.google.com/)
 
 ---
 
-### Step 1 — Clone the project
+### Step 1 - Clone the project
 
 ```bash
 git clone https://github.com/your-username/elderai.git
 cd elderai
 ```
 
-### Step 2 — Create a virtual environment (recommended)
+### Step 2 - Create a virtual environment (recommended)
 
 ```bash
 python -m venv venv
@@ -92,13 +92,13 @@ venv\Scripts\activate
 source venv/bin/activate
 ```
 
-### Step 3 — Install dependencies
+### Step 3 - Install dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 4 — Add your Gemini API key
+### Step 4 - Add your Gemini API key
 
 Open `config.py` and replace the placeholder:
 
@@ -108,7 +108,7 @@ GEMINI_API_KEY = "INSERT_YOUR_KEY_HERE"
 
 with your actual key from [aistudio.google.com](https://aistudio.google.com/).
 
-### Step 5 — Personalise the knowledge base *(optional but recommended)*
+### Step 5 - Personalise the knowledge base *(optional but recommended)*
 
 Open the `.txt` files inside `rag/kb/` and fill in your real information:
 
@@ -122,7 +122,7 @@ Open the `.txt` files inside `rag/kb/` and fill in your real information:
 
 You can add new `.txt` files too — they are picked up automatically.
 
-### Step 6 — Run the app
+### Step 6 - Run the app
 
 ```bash
 streamlit run app.py
@@ -197,39 +197,39 @@ All settings live in `config.py`:
 
 **Voice tab not working** → Gemini STT uploads audio to the Files API. Make sure your API key has Files API access enabled and your network allows outbound HTTPS.
 
-**TTS has no sound** → Your browser may block autoplay. The audio widget is still shown — press the play button manually.
+**TTS has no sound** → Your browser may block autoplay. The audio widget is still shown press the play button manually.
 
 **Very slow first startup** → The FAISS index is being built from your KB documents. This only happens once; it loads from disk on all future runs.
 
 ---
 
-## Hopes for the Next — Roadmap
+## Hopes for the Next: Roadmap
 
 This prototype solves the core UX problem. Here is where we want to take it:
 
 ### Near Term
 - 🌏 **Full Bahasa Indonesia support** with a language toggle on the main screen
-- 🗣️ **Gemini Live API integration** — true real-time conversational voice, replacing the record-transcribe-respond loop for dramatically lower latency
-- ☁️ **Google Cloud TTS upgrade** — natural, expressive voices replacing gTTS
-- 💊 **Medication reminder scheduler** — set reminders once; receive push notifications daily
+- 🗣️ **Gemini Live API integration** true real-time conversational voice, replacing the record-transcribe-respond loop for dramatically lower latency
+- ☁️ **Google Cloud TTS upgrade** natural, expressive voices replacing gTTS
+- 💊 **Medication reminder scheduler** set reminders once; receive push notifications daily
 
 ### Medium Term
-- 👨‍👩‍👧 **Family caregiver portal** — a separate web view for family members to update the knowledge base, review conversation history, and add new contacts remotely
-- 🧠 **Cross-session memory** — remember the user's name, preferences, and recent health notes across all conversations
-- 📊 **Health tracking** — log blood pressure, blood sugar, or weight through voice and visualise trends over time
-- 🔐 **End-to-end encryption** — protect all health data in transit and at rest (AES-256 + TLS)
-- 🌐 **Deploy to Streamlit Cloud / Cloud Run** — shareable URL for family members to set up for their parents in minutes
+- 👨‍👩‍👧 **Family caregiver portal** a separate web view for family members to update the knowledge base, review conversation history, and add new contacts remotely
+- 🧠 **Cross-session memory** remember the user's name, preferences, and recent health notes across all conversations
+- 📊 **Health tracking** log blood pressure, blood sugar, or weight through voice and visualise trends over time
+- 🔐 **End-to-end encryption** protect all health data in transit and at rest (AES-256 + TLS)
+- 🌐 **Deploy to Streamlit Cloud / Cloud Run** shareable URL for family members to set up for their parents in minutes
 
 ### Long Term
-- 📱 **Dedicated mobile app** (Flutter) — larger touch targets, haptic feedback, offline mode
-- 👁️ **Fall detection** — continuous background monitoring via device camera with automatic family alert
-- 🏥 **Healthcare integration** — connect to Indonesian public health records (BPJS) for appointment booking and lab results
-- 🔈 **Wake word activation** — "Hei ElderAI, tolong…" — no screen tapping needed
-- 📵 **Offline mode** — on-device small language model for areas with poor connectivity
-- 🌍 **Multi-language KB** — auto-detect and respond in the user's regional language (Javanese, Sundanese, Batak, etc.)
+- 📱 **Dedicated mobile app** (Flutter) larger touch targets, haptic feedback, offline mode
+- 👁️ **Fall detection** continuous background monitoring via device camera with automatic family alert
+- 🏥 **Healthcare integration** connect to Indonesian public health records (BPJS) for appointment booking and lab results
+- 🔈 **Wake word activation** "Hei ElderAI, tolong…" no screen tapping needed
+- 📵 **Offline mode** on-device small language model for areas with poor connectivity
+- 🌍 **Multi-language KB** auto-detect and respond in the user's regional language (Javanese, Sundanese, Batak, etc.)
 
 ---
 
 ## Team
 
-Built for **Maju Bareng AI 2025** Final Project — a programme by [Hacktiv8](https://hacktiv8.com) in partnership with Google, bringing AI education and real-world applications to Indonesia.
+Built for **Maju Bareng AI 2025** Final Project, a programme by [Hacktiv8](https://hacktiv8.com) in partnership with Google, bringing AI education and real-world applications to Indonesia. Developed by Ahmad Bara Wirayudha.
