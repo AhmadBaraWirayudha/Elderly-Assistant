@@ -4,3 +4,38 @@ Appointment helper notes
 - Repeat the appointment back in a simple sentence.
 - If the date is near, remind the user to prepare ID, notes, and transport.
 - Use absolute dates when possible.
+
+======================
+(Edit this file to add your real appointment details)
+
+Doctor Appointments
+-------------------
+Dr. [General Practitioner Name]
+- Clinic: [Clinic Name]
+- Phone: [Phone Number]
+- Next visit: [Date and Time]
+- Address: [Address]
+
+Dr. [Specialist Name]
+- Speciality: [e.g. Heart / Eye / Bone]
+- Clinic: [Clinic Name]
+- Phone: [Phone Number]
+- Next visit: [Date and Time]
+
+Pharmacy
+--------
+- Name: [Pharmacy Name]
+- Phone: [Phone Number]
+- Address: [Address]
+- Opening hours: [e.g. Mon-Sat 8am-9pm]
+
+WHAT TO BRING TO APPOINTMENTS
+- Health insurance card
+- List of all current medications
+- ID card
+- This phone if you want to show the doctor something
+
+REMINDERS BEFORE AN APPOINTMENT
+- Do not eat for 8 hours before a blood test.
+- Bring your blood pressure readings if you track them at home.
+- Write down any new symptoms before you go.
