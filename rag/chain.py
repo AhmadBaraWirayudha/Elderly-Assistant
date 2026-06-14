@@ -57,12 +57,22 @@ def load_vectorstore(force_rebuild: bool = False) -> FAISS:
         except Exception:
             pass  # Fall through and rebuild
     os.makedirs(config.KB_PATH, exist_ok=True)
-    loader = DirectoryLoader(KB_PATH, glob="**/*.txt", loader_cls=TextLoader, loader_kwargs={"encoding": "utf-8"}, show_progress=True, use_multithreading=False,)
+    loader = DirectoryLoader(config.KB_PATH, glob="**/*.txt", loader_cls=TextLoader, loader_kwargs={"encoding": "utf-8"}, show_progress=True, use_multithreading=False, silent_errors=True,)
     docs = loader.load()
-    splitter = RecursiveCharacterTextSplitter(chunk_size=700, chunk_overlap=120)
+    if not docs:
+    # Seed with a placeholder so FAISS doesn't fail on empty corpus
+        docs = [Document(
+            page_content=(
+            "This is an empty knowledge base. "
+            "Add .txt files to the rag/kb/ folder to personalise the assistant."
+            ),
+            metadata={"source": "system"},
+        )]
+    splitter = RecursiveCharacterTextSplitter(chunk_size=config.CHUNK_SIZE, chunk_overlap=config.CHUNK_OVERLAP,)
     chunks = splitter.split_documents(docs)
     vs = FAISS.from_documents(chunks, emb)
     os.makedirs(FAISS_PATH, exist_ok=True)
+    vs.save_local(config.FAISS_PATH)
     vs.save_local(FAISS_PATH)
     return vs
 
@@ -73,9 +83,9 @@ def get_retrieval_score(query: str, vectorstore: FAISS) -> float:
         if not results:
             return 0.0
         _, score = results[0]
-        return float(score)
+        return float(max(0.0, min(1.0, score)))
      except Exception:
-        return 0.0
+        return 0.5  # Safe middle path on error
 
 def retrieve_context(query: str, vectorstore: FAISS, k: int = 3) -> RetrievedContext:
     try:
@@ -99,28 +109,58 @@ def retrieve_context(query: str, vectorstore: FAISS, k: int = 3) -> RetrievedCon
 
     return RetrievedContext(text="\n\n".join(lines), score=top_score, sources=sources)
 
+# ── Chain builder ────────────────────────────────────────────────────────────
+
 def build_chain(model_key: str = "flash"):
+    """Return (rag_chain, vectorstore).  Call again when model_key changes."""
     llm = ChatGoogleGenerativeAI(
-        model=GEMINI_MODELS[model_key],
-        google_api_key=GEMINI_API_KEY,
+        model=config.GEMINI_MODELS[model_key],
+        google_api_key=config.GEMINI_API_KEY,
         streaming=True,
         temperature=0.3,
     )
+    
     vs = load_vectorstore()
     retriever = vs.as_retriever(
         search_type="similarity_score_threshold",
-        search_kwargs={"score_threshold": 0.4, "k": 3},
+        search_kwargs={
+            "score_threshold": config.RETRIEVAL_THRESHOLD,
+            "k": config.RETRIEVAL_K,
+        },
     )
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", SYSTEM_PROMPT),
+        MessagesPlaceholder("chat_history"),
+        ("human", "{input}"),
+    ])
+
+    qa_chain = create_stuff_documents_chain(llm, prompt)
+    rag_chain = create_retrieval_chain(retriever, qa_chain)
+
+    return rag_chain, vs
     memory = ConversationBufferWindowMemory(
         k=MAX_HISTORY,
         memory_key="chat_history",
         return_messages=True,
         output_key="answer",
     )
+    
     chain = ConversationalRetrievalChain.from_llm(
         llm=llm,
         retriever=retriever,
         memory=memory,
         return_source_documents=True,
+
+# ── History helpers ──────────────────────────────────────────────────────────
+
+def to_lcel_history(history: list) -> list:
+    """Convert [(query, answer), ...] to LangChain message objects."""
+    messages = []
+    for q, a in history[-config.MAX_HISTORY:]:
+        messages.append(HumanMessage(content=q))
+        messages.append(AIMessage(content=a))
+    return messages
+
     )
     return chain, vs
