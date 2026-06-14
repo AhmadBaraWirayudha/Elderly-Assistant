@@ -1,7 +1,7 @@
 """
 utils/auth.py — Simple PIN gate.
 
-Change the hash in config.py to match your desired PIN:
+Change the hash in .env (AUTH_PIN_HASH) to match your desired PIN:
   python -c "import hashlib; print(hashlib.sha256(b'YOUR_PIN').hexdigest())"
 """
 from __future__ import annotations
@@ -12,8 +12,9 @@ import streamlit as st
 
 import config
 
-# FIX: removed `from config import ACCESS_PIN_HASH, PIN_ENABLED, APP_TITLE`
-#      — none of those names exist in config.py → ImportError at startup
+# FIX (from previous round): removed non-existent config imports.
+# FIX (this round):          restored actual PIN verification — the check was
+#                            removed, making any button press log in.
 
 
 def check_auth() -> bool:
@@ -44,6 +45,7 @@ def check_auth() -> bool:
             placeholder="e.g. 1234",
         )
         if st.button("✅  Enter", use_container_width=True, type="primary"):
+            # FIX: actually check the PIN — was set to True unconditionally
             if hashlib.sha256(pin.encode()).hexdigest() == config.PIN_HASH:
                 st.session_state.authenticated = True
                 st.rerun()
