@@ -5,3 +5,37 @@ Medication helper notes
 - If the user asks for dosing changes, say to confirm with a doctor or pharmacist.
 - When possible, show timing in simple steps: morning, afternoon, evening, bedtime.
 - For suspicious side effects, recommend urgent medical help.
+
+Amlodipine (Blood Pressure Medicine)
+- Take 1 tablet every morning with a full glass of water.
+- Can be taken with or without food.
+- Do not stop taking it without talking to your doctor first.
+- Common side effects: swollen ankles, flushing, feeling tired.
+
+Metformin (Diabetes Medicine)
+- Take 1 tablet TWICE daily.
+- Morning dose: take with breakfast.
+- Evening dose: take with dinner.
+- Always take with food to avoid stomach upset.
+- Store at room temperature.
+
+Atorvastatin (Cholesterol Medicine)
+- Take 1 tablet every evening before bed.
+- Can be taken with or without food.
+- Avoid drinking grapefruit juice while taking this medicine.
+
+Omeprazole (Stomach / Acid Medicine)
+- Take 1 capsule 30 minutes BEFORE breakfast.
+- Swallow the capsule whole — do not crush or chew it.
+- Take it at the same time each day.
+
+Aspirin (Heart / Blood Thinner)
+- Take as directed by your doctor.
+- Usually 1 small tablet daily with food.
+- Tell your doctor if you notice unusual bruising or bleeding.
+
+GENERAL RULES FOR ALL MEDICATIONS
+- Never take double the dose if you miss one.
+- Keep all medicines away from heat, sunlight, and moisture.
+- Never share your medicines with others.
+- Keep an up-to-date list of all your medicines for doctor visits.
