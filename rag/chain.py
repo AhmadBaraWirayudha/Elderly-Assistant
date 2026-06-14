@@ -5,8 +5,8 @@ from dataclasses import dataclass
 
 import config
 from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
-from langchain.chains import create_retrieval_chain                          # FIX: was missing
-from langchain.chains.combine_documents import create_stuff_documents_chain
+from langchain_classic.chains import create_retrieval_chain               
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_core.documents import Document
 from langchain_core.messages import HumanMessage, AIMessage
@@ -127,6 +127,8 @@ def retrieve_context(query: str, vectorstore: FAISS, k: int = 3) -> RetrievedCon
 # ── Chain builder ─────────────────────────────────────────────────────────────
 
 def build_chain(model_key: str = "flash"):
+    print("model_key =", model_key)
+    print("model =", config.GEMINI_MODELS[model_key])
     """Return (rag_chain, vectorstore). Call again when model_key changes."""
     llm = ChatGoogleGenerativeAI(
         model=config.GEMINI_MODELS[model_key],
