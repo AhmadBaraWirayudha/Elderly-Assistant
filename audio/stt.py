@@ -2,17 +2,20 @@
 audio/stt.py — Speech-to-text via Gemini multimodal API.
 
 Gemini Flash accepts audio files (WAV, MP3, etc.) and returns a transcript.
-Upgrade path: swap for Google Cloud Speech-to-Text for lower latency streaming.
+Upgrade path: swap for Google Cloud Speech-to-Text for lower-latency streaming.
 """
+from __future__ import annotations   # FIX: moved to top (was after other imports → SyntaxError)
 
 import os
 import tempfile
-import google.generativeai as genai
-import config
-from __future__ import annotations
-from providers.gemini_client import transcribe_audio
 
-genai.configure(api_key=config.GEMINI_API_KEY)
+import google.generativeai as genai
+
+import config
+
+# FIX: removed `from providers.gemini_client import transcribe_audio` —
+#      it imported a function with the same name as the one defined below,
+#      silently shadowing/conflicting with it.
 
 _TRANSCRIBE_PROMPT = (
     "Transcribe the following audio exactly as spoken. "
@@ -20,7 +23,7 @@ _TRANSCRIBE_PROMPT = (
     "If the audio is silent or unclear, output the single word: UNCLEAR"
 )
 
-# audio/stt.py  — swap in Whisper or Gemini STT later
+
 def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> str:
     """
     Upload audio to Gemini Files API and return the transcript.
@@ -32,7 +35,8 @@ def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> str:
     Returns:
         Transcription string, or raises RuntimeError on failure.
     """
-    # Write to a temp file — Gemini Files API requires a file path
+    genai.configure(api_key=config.GEMINI_API_KEY)
+
     suffix = ".wav" if "wav" in mime_type else ".mp3"
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as f:
         f.write(audio_bytes)
@@ -58,6 +62,6 @@ def transcribe_audio(audio_bytes: bytes, mime_type: str = "audio/wav") -> str:
             except Exception:
                 pass  # Non-fatal cleanup failure
 
-    raise NotImplementedError("Wire in Whisper or provider STT here")
-def transcribe_audio_bytes(audio_bytes: bytes, model_name: str, mime_type: str = "audio/wav") -> str:
-    return transcribe_audio(model_name=model_name, audio_bytes=audio_bytes, mime_type=mime_type)
+    # FIX: removed unreachable `raise NotImplementedError` that was here
+    # FIX: removed `transcribe_audio_bytes` that called transcribe_audio
+    #      with a `model_name` kwarg the function doesn't accept

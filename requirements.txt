@@ -1,17 +1,31 @@
+# ElderAI — Python dependencies
+# Install with:  pip install -r requirements.txt
 
+# ── Streamlit ─────────────────────────────────────────────────
 streamlit>=1.36
+
+# ── Google Gemini (both SDKs — old for direct calls, new for LangChain) ───
+google-generativeai>=0.8.0
+google-genai>=1.33.0
+
+# ── LangChain + Gemini bridge ─────────────────────────────────
 langchain>=0.2.12
 langchain-community>=0.2.11
 langchain-google-genai>=2.0.0
 langchain-text-splitters>=0.2.2
-langchain-huggingface>=0.0.3
-google-genai>=1.33.0
+
+# ── Vector store ──────────────────────────────────────────────
 faiss-cpu>=1.8.0.post1
-sentence-transformers>=3.0.1
-torch>=2.3.0
+
+# ── TTS ───────────────────────────────────────────────────────
 gTTS>=2.5.3
+
+# ── Utilities ─────────────────────────────────────────────────
 python-dotenv>=1.0.1
 Pillow>=10.4.0
-numpy>=1.26.4
-google-generativeai>=0.5
 
+# REMOVED (3 GB+ of unused dependencies):
+#   langchain-huggingface   — HuggingFaceEmbeddings() was dead code, never called
+#   sentence-transformers   — pulled in by langchain-huggingface
+#   torch                   — pulled in by sentence-transformers
+#   numpy                   — transitive dep, not needed explicitly

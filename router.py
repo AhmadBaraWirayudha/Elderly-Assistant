@@ -7,15 +7,18 @@ Decision tree:
   score >= 0.55 OR  words <= 80  →  flash       (medium confidence or moderate length)
   otherwise                       →  reasoning   (low confidence + long/complex)
 """
-
 from __future__ import annotations
+
 from dataclasses import dataclass
+
 from config import ROUTER
+
 
 @dataclass
 class RouteDecision:
     model_key: str
     reason: str
+
 
 def route(query: str, retrieval_score: float, has_image: bool) -> RouteDecision:
     if has_image:
@@ -23,7 +26,7 @@ def route(query: str, retrieval_score: float, has_image: bool) -> RouteDecision:
 
     words = len(query.split())
 
-      if (retrieval_score >= ROUTER["score_high"]
+    if (retrieval_score >= ROUTER["score_high"]   # FIX: had 6-space indent → IndentationError
             and words <= ROUTER["words_short"]):
         return RouteDecision(
             "flash_lite",
@@ -41,4 +44,4 @@ def route(query: str, retrieval_score: float, has_image: bool) -> RouteDecision:
     return RouteDecision(
         "reasoning",
         f"low KB hit={retrieval_score:.2f}, complex query ({words} words)"
-      )
+    )

@@ -4,17 +4,17 @@ utils/auth.py — Simple PIN gate.
 Change the hash in config.py to match your desired PIN:
   python -c "import hashlib; print(hashlib.sha256(b'YOUR_PIN').hexdigest())"
 """
-
 from __future__ import annotations
-import hashlib
-import streamlit as st
-import config
-from config import ACCESS_PIN_HASH, PIN_ENABLED, APP_TITLE
-from utils.errors import friendly_error
 
-# Generate: hashlib.sha256(b"your_pin").hexdigest()
-def _hash_pin(pin: str) -> str:
-    return hashlib.sha256(pin.encode("utf-8")).hexdigest()  # change before use
+import hashlib
+
+import streamlit as st
+
+import config
+
+# FIX: removed `from config import ACCESS_PIN_HASH, PIN_ENABLED, APP_TITLE`
+#      — none of those names exist in config.py → ImportError at startup
+
 
 def check_auth() -> bool:
     """
