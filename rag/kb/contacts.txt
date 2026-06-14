@@ -4,3 +4,34 @@ Contacts helper notes
 - Repeat the contact in a clean format.
 - If the user asks for emergency help, tell them to call local emergency services or a trusted family member immediately.
 - Avoid overexplaining.
+
+==================
+(Edit this file to add your real contacts)
+
+EMERGENCY NUMBERS
+-----------------
+Medical Emergency (Ambulance):  119
+General Emergency:              112
+Police:                         110
+Fire Department:                113
+
+FAMILY CONTACTS
+---------------
+[Family Member 1 - e.g. Son/Daughter]:  [Phone Number]
+[Family Member 2]:                       [Phone Number]
+[Family Member 3]:                       [Phone Number]
+
+NEARBY NEIGHBOURS
+-----------------
+[Neighbour Name]:  [Phone Number]
+
+DOCTORS (Direct Lines)
+----------------------
+[Doctor Name]:    [Phone Number]
+[Pharmacy Name]:  [Phone Number]
+
+HOW TO MAKE A PHONE CALL
+If you need to call someone:
+1. Ask me: "Call [name]" and I will give you their number.
+2. Or look in this list and dial the number yourself.
+3. In any emergency, always call 119 first.
