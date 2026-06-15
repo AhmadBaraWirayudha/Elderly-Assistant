@@ -1,39 +1,25 @@
-# Elderly Assistant, Simple AI Dashboard for Elderly
+# 🏠 ElderAI
 
-> **Maju Bareng AI 2026 · Hacktiv8 × Google x AVPN X Asian Development Bank**
->
-> *Voice-first · Photo-aware · Single screen · Powered by Gemini 2.5*
+**Maju Bareng AI 2025 · Hacktiv8 × Google**
 
----
+> Voice-first · Photo-aware · Single screen · Powered by Gemini 2.5
 
-## What Is this?
-
-Most AI tools overwhelm elderly users with dense menus, tiny buttons, and walls of text.
-**Elderly Assistant does the opposite.**
-
-One screen. Three big input modes: **Speak, Type, Photo**.
-Every answer is spoken aloud. No confusion. No clutter.
-
-Built on Gemini 2.5 and LangChain RAG, it routes each query to the right model
-automatically: fast and cheap for simple questions, more capable for complex ones all
-invisible to the user.
+A minimal AI companion built for elderly users — three big buttons, every answer spoken aloud, zero clutter.  Backed by Gemini 2.5, LangChain RAG, and FAISS, with a smart model router that keeps costs low on simple queries and escalates only when needed.
 
 ---
 
-## Features at a Glance
+## The Problem
 
-| Feature | Detail |
-|---|---|
-| 🎤 **Voice input** | Record a question; Gemini transcribes it instantly |
-| ⌨️ **Text input** | Large text box with a single big button |
-| 📷 **Photo input** | Point at a medicine label, document, or appliance and get a plain explanation |
-| 🔊 **Auto read-aloud** | Every answer is spoken back with TTS |
-| 🧠 **Smart model router** | Flash-Lite for simple hits · Flash for medium · Pro for complex reasoning |
-| 📚 **Personal knowledge base** | RAG over your own docs: meds, contacts, appointments, device guides, FAQs |
-| 🔐 **PIN protection** | Simple 4-digit PIN keeps family data private |
-| 💬 **Chat history** | Every conversation saved to SQLite for review |
-| ⚡ **Immediate acknowledgement** | "I heard you" shows before the answer, no silent wait |
-| 🎨 **Elderly-first design** | 22 px base font · large buttons · high contrast · Google colour palette |
+Most AI tools overwhelm elderly users: dense menus, tiny buttons, walls of text, silent waits.
+ElderAI removes all of that.
+
+| What they need | What most tools do | What ElderAI does |
+|---|---|---|
+| One action at a time | Many tabs and settings | One screen, three buttons |
+| Spoken answers | Text-only output | Auto read-aloud every reply |
+| Fast response | Slow, expensive models for everything | Routes simple questions to lite model |
+| Plain language | Jargon-heavy replies | System prompt enforces ≤ 4 short sentences |
+| Help with real life | Generic assistant | Personal KB: meds, contacts, device guides |
 
 ---
 
@@ -41,101 +27,151 @@ invisible to the user.
 
 ```
 User
-  ├── 🎤 Speak  → Gemini STT (Files API)
-  ├── ⌨️ Type   → plain text
-  └── 📷 Photo  → Gemini Vision (PIL image)
-          │
-          ▼
-   LangChain RAG
-   (FAISS + Gemini Embeddings → personal knowledge base)
-          │
-          ▼
+  ├── 🎤 Speak   → Gemini STT (inline audio, no upload latency)
+  ├── ⌨️  Type    → plain text
+  └── 📷 Photo   → Gemini Vision (PIL image)
+            │
+            ▼
+   Input Validator
+   (sanitize · length-guard · image-size check)
+            │
+            ▼
+   LangChain RAG  ←──────── FAISS index (built from rag/kb/*.txt)
+   (LCEL chain)             Gemini Embeddings
+            │
+            ▼
    Model Router
-   ├── Flash-Lite  — high KB score + short query
-   ├── Flash       — medium confidence / moderate length
-   └── Pro         — low KB score / complex reasoning
-          │
-          ▼
-   Streaming answer  →  TTS (gTTS)
-          │
-          ▼
-   SQLite chat history
+   ├── lite   KB score ≥ 0.80 AND query ≤ 40 words  (fast, cheap)
+   ├── flash  KB score ≥ 0.55 OR  query ≤ 80 words  (balanced)
+   └── pro    everything else                         (reasoning)
+            │
+            ▼
+   Streaming answer  ──► Source attribution (which KB file answered)
+            │
+            ▼
+   SQLite history  +  Structured JSON logs
+            │
+            ▼
+   gTTS → auto-play audio
 ```
+
+---
+
+## Features
+
+| | Feature | Detail |
+|---|---|---|
+| 🎤 | Voice input | Gemini Flash transcribes audio inline — no temp files |
+| ⌨️ | Text input | Large input box, single big Ask button |
+| 📷 | Photo input | Camera capture or file upload; vision model explains labels/docs |
+| 🔊 | Auto read-aloud | gTTS reads every answer; auto-play with manual fallback |
+| 🧠 | Smart router | Three-tier model selection based on KB hit score + query length |
+| 📚 | Source attribution | Answers show which KB file was used (`📚 From: medications.txt`) |
+| 🔐 | PIN protection | SHA-256 hashed PIN; configurable via env var |
+| 💾 | Observability DB | SQLite stores model used, input type, retrieval score, latency per turn |
+| 📋 | Structured logs | JSON-line logs with ts/level/event keys — APM-ready |
+| 🏥 | Startup health check | Validates API key, DB path, KB files, FAISS staleness on boot |
+| ✅ | Input validation | Strips control chars, normalises unicode, enforces length limits |
+| 🔄 | Schema migrations | Versioned forward-only SQLite migrations with crash-safe column guards |
+| ⚡ | Cached chain | `@st.cache_resource` — FAISS index built once, reused across reruns |
 
 ---
 
 ## Quick Start
 
 ### Prerequisites
+- Python 3.10 or newer
+- Gemini API key — get one free at [Google AI Studio](https://aistudio.google.com/)
 
-- Python 3.10 or higher
-- A Gemini API key, get one free at [Google AI Studio](https://aistudio.google.com/)
-
----
-
-### Step 1 - Clone the project
-
+### 1. Clone
 ```bash
 git clone https://github.com/your-username/elderai.git
 cd elderai
 ```
 
-### Step 2 - Create a virtual environment (recommended)
-
-```bash
-python -m venv venv
-
-# Windows
-venv\Scripts\activate
-
-# macOS / Linux
-source venv/bin/activate
-```
-
-### Step 3 - Install dependencies
-
+### 2. Install dependencies
 ```bash
 pip install -r requirements.txt
 ```
 
-### Step 4 - Add your Gemini API key
+### 3. Set your API key
 
-Open `config.py` and replace the placeholder:
-
-```python
-GEMINI_API_KEY = "INSERT_YOUR_KEY_HERE"
+**Option A — `.env` file (recommended for local dev):**
+```bash
+cp .env.example .env
+# Open .env and set GEMINI_API_KEY=your_actual_key
 ```
 
-with your actual key from [aistudio.google.com](https://aistudio.google.com/).
+**Option B — environment variable:**
+```bash
+export GEMINI_API_KEY=your_actual_key
+```
 
-### Step 5 - Personalise the knowledge base *(optional but recommended)*
+### 4. Personalise the knowledge base *(optional but recommended)*
 
-Open the `.txt` files inside `rag/kb/` and fill in your real information:
+Edit the `.txt` files in `rag/kb/`:
 
 | File | What to add |
 |---|---|
-| `medications.txt` | Medicines with dosage and timing |
-| `appointments.txt` | Doctor names, clinic phones, next visit dates |
+| `medications.txt` | Medicine names, dosages, timing |
+| `appointments.txt` | Doctor names, clinic phones, next visits |
 | `contacts.txt` | Family members, neighbours, emergency numbers |
-| `howto.txt` | Device guides for TV, phone, Wi-Fi, etc. |
-| `faqs.txt` | Common questions and answers in plain language |
+| `howto.txt` | Device guides: TV, phone, Wi-Fi, AC |
+| `faqs.txt` | Common health questions in plain language |
 
-You can add new `.txt` files too, they are picked up automatically.
+Any `.txt` file you add is automatically indexed.
 
-### Step 6 - Run the app
+### 5. Run
 
 ```bash
-streamlit run app.py
+make run
+# or:  streamlit run app.py
 ```
 
-Open your browser to **http://localhost:8501**
+Open **http://localhost:8501**
 
-> **Default PIN is `1234`.**
-> Change it by running:
-> ```bash
-> python -c "import hashlib; print(hashlib.sha256(b'your_new_pin').hexdigest())"
-> ```
-> and pasting the output into `PIN_HASH` in `config.py`.
+> Default PIN is `1234`.  
+> Change it: `python -c "import hashlib; print(hashlib.sha256(b'NEW_PIN').hexdigest())"` → set `AUTH_PIN_HASH` in `.env`.
+
+---
+
+## Deploying to Streamlit Cloud
+
+1. Push the repo to GitHub (`.env` and `chat_history.db` are gitignored automatically).
+2. Go to [share.streamlit.io](https://share.streamlit.io) and connect your repo.
+3. Set the main file to `app.py`.
+4. Open **Settings → Secrets** and paste:
+   ```toml
+   GEMINI_API_KEY = "your_key_here"
+   AUTH_PIN_HASH  = "your_pin_hash_here"
+   ```
+   See `.streamlit/secrets.toml.example` for the full template.
+5. Deploy — the FAISS index builds automatically on first boot.
+
+> **Note:** Streamlit Cloud resets the filesystem on redeploy, so the FAISS index rebuilds on each cold start (usually < 10 s for small KB files).  The SQLite history is also ephemeral on free tier; use a persistent volume or external DB for production.
+
+---
+
+## Development
+
+```bash
+make run          # start the app
+make test         # run 39 unit tests (no API key needed, completes in < 1 s)
+make test-cov     # tests + coverage report
+make lint         # syntax-check all Python files
+make clean        # delete kb_index/, chat_history.db, __pycache__
+make rebuild      # clean + restart (forces FAISS index rebuild)
+```
+
+### Running tests
+```bash
+python -m pytest tests/ -v
+```
+All 39 tests are self-contained: no Gemini API, no network, no Streamlit context required.
+
+### Adding knowledge base documents
+Drop `.txt` files into `rag/kb/`, then run `make rebuild` to reindex.  
+The health check at startup warns you if the KB files are newer than the FAISS index.
 
 ---
 
@@ -143,18 +179,21 @@ Open your browser to **http://localhost:8501**
 
 ```
 elderai/
-├── app.py                   ← Main Streamlit entry point
-├── config.py                ← API key, model names, all tunables
-├── router.py                ← Model selection logic
+├── app.py                    Main Streamlit app (UI + handlers)
+├── config.py                 All tunables; loads .env / st.secrets
+├── router.py                 Three-tier model router (lite / flash / pro)
 ├── requirements.txt
-├── README.md
+├── Makefile                  run · test · clean · rebuild · lint
+├── conftest.py               pytest path setup
 │
+├── .env.example              Local secrets template
 ├── .streamlit/
-│   └── config.toml          ← Theme (Google colours, font, port)
+│   ├── config.toml           Theme (Google colours, large font)
+│   └── secrets.toml.example  Streamlit Cloud secrets template
 │
 ├── rag/
-│   ├── chain.py             ← LangChain LCEL chain + FAISS + Gemini embeddings
-│   └── kb/                  ← Personal knowledge base (plain .txt files)
+│   ├── chain.py              LCEL chain + FAISS + Gemini embeddings
+│   └── kb/                   Personal knowledge base (.txt files)
 │       ├── medications.txt
 │       ├── appointments.txt
 │       ├── contacts.txt
@@ -162,168 +201,106 @@ elderai/
 │       └── faqs.txt
 │
 ├── audio/
-│   ├── stt.py               ← Speech-to-text via Gemini Files API
-│   └── tts.py               ← Text-to-speech via gTTS
+│   ├── stt.py                Gemini inline STT (no temp files)
+│   └── tts.py                gTTS text-to-speech
 │
-└── utils/
-    ├── state.py             ← Single session_state initialiser
-    ├── auth.py              ← PIN gate
-    ├── errors.py            ← Elderly-friendly error messages
-    └── history.py           ← SQLite persistence
+├── providers/
+│   └── gemini_client.py      Direct google-genai client (future use)
+│
+├── utils/
+│   ├── auth.py               PIN gate (hashed, env-configurable)
+│   ├── errors.py             Friendly elderly-safe error messages
+│   ├── health.py             Startup checks: API key, DB, KB, FAISS
+│   ├── history.py            SQLite with versioned migrations + WAL mode
+│   ├── logger.py             Structured JSON logging (APM-ready)
+│   ├── state.py              Single st.session_state initialiser
+│   └── validator.py          Input sanitisation and length guards
+│
+└── tests/
+    └── test_core.py          39 unit tests (validator, router, DB, health, config)
 ```
 
 ---
 
 ## Configuration Reference
 
-All settings live in `config.py`:
+All settings live in `config.py`.  Override via `.env` or Streamlit Cloud secrets:
 
-| Key | Default | Description |
+| Variable | Default | Description |
 |---|---|---|
-| `GEMINI_API_KEY` | `INSERT_YOUR_KEY_HERE` | Your key from Google AI Studio |
-| `GEMINI_MODELS` | flash-lite / flash / pro | Model names per tier |
-| `ROUTER` thresholds | 0.80 / 0.55 / 40 / 80 | Score and word-count cutoffs |
-| `TTS_LANG` | `"en"` | Change to `"id"` for Bahasa Indonesia |
-| `PIN_HASH` | `1234` (hashed) | SHA-256 hash of your PIN |
-| `MAX_HISTORY` | `6` | Conversation turns kept in context |
+| `GEMINI_API_KEY` | *(required)* | Key from [Google AI Studio](https://aistudio.google.com/) |
+| `AUTH_PIN_HASH` | SHA-256 of `1234` | Hash of your 4-digit PIN |
+| `TTS_LANG` | `en` | TTS language code (`id` for Bahasa Indonesia) |
+
+Tunables in `config.py` (not exposed as env vars):
+
+| Name | Default | Effect |
+|---|---|---|
+| `GEMINI_MODELS` | lite / flash / pro | Gemini model strings per tier |
+| `ROUTER` thresholds | 0.80 / 0.55 / 40 / 80 | KB score and word-count cutoffs |
+| `RETRIEVAL_THRESHOLD` | 0.40 | Minimum score for a chunk to be returned |
+| `MAX_HISTORY` | 6 | Conversation turns kept in LLM context |
+| `MAX_QUERY_CHARS` | 2 000 | Input truncated here before the model sees it |
+| `CHUNK_SIZE` / `CHUNK_OVERLAP` | 500 / 50 | KB document splitting parameters |
 
 ---
 
 ## Troubleshooting
 
-**"Please add the API key"** → Open `config.py` and insert your Gemini key.
-
-**FAISS index errors on first run** → Delete the `kb_index/` folder and restart. It rebuilds automatically.
-
-**Voice tab not working** → Gemini STT uploads audio to the Files API. Make sure your API key has Files API access enabled and your network allows outbound HTTPS.
-
-**TTS has no sound** → Your browser may block autoplay. The audio widget is still shown press the play button manually.
-
-**Very slow first startup** → The FAISS index is being built from your KB documents. This only happens once; it loads from disk on all future runs.
+**"Setup required" on startup** → `.env` not found or `GEMINI_API_KEY` not set.  
+**FAISS index errors** → delete `kb_index/` and restart. It rebuilds automatically.  
+**Voice tab not transcribing** → Gemini STT uses the Files-compatible API; ensure your key has multimodal access.  
+**TTS plays silently** → Browser may block autoplay; the audio widget is still shown — press ▶ to play manually.  
+**Wrong PIN rejected** → Re-generate hash: `python -c "import hashlib; print(hashlib.sha256(b'YOUR_PIN').hexdigest())"` and update `AUTH_PIN_HASH`.  
+**KB answers seem stale** → Startup health check warns if KB files are newer than the FAISS index. Run `make rebuild`.
 
 ---
 
-## Hopes for the Next: Roadmap
+## Roadmap — Hopes for the Next
 
-This prototype solves the core UX problem. Here is where we want to take it:
+### Near Term
+- 🗣️ **Gemini Live API** — real-time bidirectional voice, replacing the record-transcribe loop for dramatically lower latency
+- ☁️ **Google Cloud TTS** — natural, expressive voices replacing gTTS
+- 🌏 **Bahasa Indonesia UI** — full localisation with language toggle
+- 💊 **Medication reminders** — scheduled push notifications via Streamlit or a companion app
 
-**Short-term Fixes:**  
-- **Database:** Analyze slow queries using execution plans; add missing indexes on high-selectivity columns used in JOIN/WHERE.  E.g. create a composite index on frequently joined fields (most selective first).  Audit and drop unused or duplicate indexes.  Ensure all FK columns are indexed.  For example:  
-  ```sql
-  CREATE INDEX idx_orders_customer ON Orders(CustomerID);  -- speeds JOIN on CustomerID
-  ```  
-  Use proper column types (e.g. INT for IDs, DATE for dates) to save space and speed comparisons.  
+### Medium Term
+- 👨‍👩‍👧 **Family caregiver portal** — separate view for family to update KB, review history, manage contacts remotely
+- 🧠 **Cross-session memory** — remember name, preferences, recent health notes across conversations
+- 📊 **Health tracking** — log blood pressure, blood sugar, weight by voice; visualise trends
+- 🔐 **End-to-end encryption** — AES-256 at rest + TLS in transit for all health data
+- 🌐 **Persistent cloud deployment** — managed DB + object storage for KB; survives redeploys
 
-- **Backend:** Enforce input validation and output encoding.  Use JSON schema or validators (e.g. Joi, Pydantic) to reject malformed input early.  Always use parameterized queries or ORM input sanitization to prevent SQL injection and XSS.  Refactor any logic buried in controllers into service layer functions for clarity.  Start writing unit tests for each function/module; use mocks to isolate dependencies.  Implement API contracts (OpenAPI) if not present, and version APIs (URL or header versioning) to handle changes.
-
-- **UI/UX:** Audit UI components for responsiveness (use fluid layouts, CSS media queries) and accessibility (add `alt` tags, ARIA labels, ensure keyboard focus).  Use consistent design tokens and style guides.  Streamline key user flows: map each “happy path” and cut unnecessary steps.  For example, reduce form fields, or combine steps (e.g. signup + profile creation in one).  
-
-- **Performance:** Enable caching layers.  Add an in-memory cache (e.g. Redis) for expensive read queries and API responses.  Configure HTTP caching (ETags, Cache-Control) for static assets and content.  Example:  
-  ```python
-  cache_key = f"user:{user_id}:profile"
-  profile = cache.get(cache_key)
-  if not profile:
-      profile = db.query(User).filter(id=user_id).first()
-      cache.set(cache_key, profile, expires=3600)
-  ```  
-  Use profiling tools (e.g. `EXPLAIN ANALYZE` in SQL, application profilers) to find bottlenecks.
-
-- **Security:** Patch all dependencies to eliminate known vulnerabilities.  Enforce TLS/HTTPS.  Apply OWASP Top-10 mitigations: e.g. validate and sanitize all inputs to prevent SQL injection/XSS, enforce least-privilege on data access, and store passwords securely (bcrypt).  Perform a quick security scan (SAST/DAST).
-
-- **Testing:** Set up automated test suite.  Write unit tests for core functions (fast, isolated).  Write integration tests covering service interactions (use test DB, mock external calls).  Start basic end-to-end tests (e.g. Selenium/Cypress) for critical user flows (login, key pages).  Integrate tests in CI pipeline to prevent regressions.  
-
-- **Monitoring:** Instrument the code with logging (structured logs) and metrics.  Track key metrics: request latency, error rates, CPU/memory usage.  Use an APM tool (Prometheus+Grafana, ELK, Datadog) to collect metrics, logs, and traces.  Set alerts on error spikes and resource limits.  
-
-**Medium-term Fixes:**  
-- **DB Schema & Migrations:** Formalize a migration process with version control (Liquibase/Flyway).  Refactor schema for consistency: split large tables into 3NF (normalize) to improve data integrity, while denormalizing or adding summary tables for heavy read use cases.  E.g.: split `Users` and `Orders` into separate tables, link via foreign key, and create an aggregate table if needed for analytics.  Plan multi-step migrations for incompatible changes (e.g. renaming a column: add new column, backfill data, switch code, drop old column).  Maintain backups and perform migrations during low-load windows.
-
-- **Backend Models/ORM:** Review data models and adjust relationships.  If using an ORM, profile slow ORM queries (e.g. using Django’s `.explain()` or SQLAlchemy logging) and optimize them.  For complex queries, consider raw SQL or stored procedures.  Compare ORM vs raw on a hot path in a table: 
-
-  | Strategy | Pros | Cons |
-  | -------- | ---- | ---- |
-  | **ORM** (e.g. Django/SQLAlchemy) | Increases productivity and code safety (auto-escaping); fits OOP model; easy migrations & validations | Can generate inefficient queries; extra abstraction overhead; may leak N+1 queries |
-  | **Raw SQL** | Full control, can hand-tune queries for performance | More verbose; higher risk of injection if not carefully parameterized; bypasses some ORM conveniences |
-  
-  Measure query time in each case to decide.  Use composite indexes to help ORM-generated queries join faster.
-
-- **Caching & Queues:** Implement multi-layer caching: 
-  - **Data caching:** Cache DB query results (Redis, Memcached) for idempotent reads.  
-  - **HTTP caching/CDN:** Use CDN for static content, configure `max-age`.  
-  - **In-app caches:** e.g. in-memory cache for per-request repeated lookups.  
-  - **Message queue:** For expensive background tasks (email, reports), add a queue (RabbitMQ/Kafka) to offload work from request path.
-
-- **UI/UX & Components:** Redesign any complex or slow components.  Break large pages into smaller components with lazy-loading (dynamic import) to speed initial load.  Ensure responsive breakpoints (mobile-first design).  Add ARIA roles/labels and ensure color contrast meets standards.  Test keyboard navigation and screen reader compatibility.  
-
-- **Accessibility:** Verify compliance with WCAG 2.1 AA.  Example fixes: add `alt` text to images, ensure form inputs have `<label>`, provide visible focus indicator, and ensure video has captions.  Conduct an accessibility audit (automated tools like axe, manual testing).
-
-- **Testing Expansion:** Increase coverage.  Add more unit tests to cover edge cases.  Write end-to-end tests for all major user stories.  Use contract testing for APIs (e.g. Pact) to ensure front/back integration.  Automate performance regression tests on critical paths (simulate typical load).  
-
-- **Security Hardening:** Perform a thorough security review.  Implement Content Security Policy (CSP) headers, Secure cookies (HttpOnly/SameSite), rate-limiting to prevent brute force.  Enforce multi-factor auth.  Scan for vulnerabilities (e.g. dependency CVEs, OWASP ZAP).  Apply a strict CORS policy if applicable.
-
-- **Monitoring/Observability:** Establish dashboards for “golden signals”: latency, throughput, errors, and saturation.  Implement distributed tracing (e.g. Jaeger) to trace user requests through services.  Use logs and metrics together: centralize logs (ELK/CloudWatch) and create alerts (error rate > X, CPU > Y).  Regularly review metrics for anomalies.
-
-**Long-term Improvements:**  
-- **Performance Tuning:** Conduct load testing and profiling.  Optimize slow SQL (add indexes or rewrite queries), scale DB reads (replication, sharding if needed).  Introduce advanced caches (covering indexes, materialized views).  Tune application: use a JIT or compile step if appropriate (e.g. PyPy, JIT compilation).  Optimize front-end performance (bundle/minify assets, tree-shake JS, preload critical resources).
-
-- **Scalability:** If necessary, containerize and use orchestration (Kubernetes) for autoscaling.  Implement database read replicas or partitioning for scale.  Offload static content to CDN.
-
-- **Architecture:** Consider microservices or service decomposition if the monolith grows.  Define clear API contracts (OpenAPI specs) and use an API gateway for routing/auth.  Evaluate adding search engine (Elasticsearch) if full-text search is needed.
-
-- **ML/AI Models:** If the project uses ML (as suggested by “RAG”), version models and data.  Use tools like DVC or MLflow for model reproducibility.  Monitor model drift.  Caching RAG embeddings or GPT responses can speed up repeated queries.  Evaluate newer models periodically.
-
-- **Continuous Improvement:** Collect user feedback for UI/UX.  Track feature usage analytics.  Plan iterative sprints to address findings from monitoring/logs.  Keep dependencies up to date and periodically audit code for tech debt.  
-
-**Migration Plan:** Adopt schema migrations from Day 1.  Use a **blue-green or rolling** deployment strategy for database changes.  For incompatible schema changes (rename column, change type), apply a safe multi-step process: e.g. add new column, deploy code reading both old/new, backfill data, switch code, drop old column.  Always run migrations in transactions where supported to avoid partial schema state.  Schedule migrations during low-traffic windows and verify backups before altering data.  
-
-**Testing Strategy:** Build a comprehensive test suite:  
-- **Unit tests:** Fast tests for every function and class, mocking external services.  Strive for >80% coverage on critical code.  
-- **Integration tests:** Use a staging environment with real DB and APIs.  Test major workflows end-to-end in CI.  
-- **End-to-end (E2E):** Automate UI tests for critical user flows (login, data entry, etc).  Use headless browsers (Puppeteer/Cypress).  
-- **Regression tests:** After every change, run a subset of E2E to catch interface breaks.  
-- **Performance/load tests:** Regularly simulate user load to ensure the system scales.  
-
-**Monitoring & Observability:** Follow the “three pillars”:  
-- **Metrics:** Collect application metrics (latency, request rate, error rate) and infrastructure metrics (CPU, memory, DB usage).  
-- **Logs:** Centralize logs with context (request IDs).  Log at appropriate levels (INFO for normal ops, WARN/ERROR for issues).  
-- **Tracing:** Instrument critical transactions end-to-end.  Use distributed tracing to pinpoint bottlenecks.  
-- Define SLOs and use alerts on breaches (e.g. p95 latency > target).  Continuously refine what to monitor based on production behavior.
-
-**Security Hardening Checklist:** 
-- **Authentication & Access:** Enforce least privilege.  Use strong password hashing and MFA.  Always verify permissions on every request (RBAC/ACL).  
-- **Input Safety:** Escape/sanitize all user inputs; use prepared statements or ORM escape functions to prevent SQLi and XSS.  
-- **Data Protection:** Encrypt sensitive data at rest and in transit (TLS).  Use secure cipher suites.  
-- **Dependencies:** Keep libraries/frameworks up to date.  Remove unused code or endpoints.  
-- **Configuration:** Disable debug/verbose errors in production.  Use secure headers (HSTS, CSP, X-Content-Type-Options).  
-- **Logging & Audits:** Audit logs for unusual activity.  Conduct periodic security reviews (pen-tests, code scans).
-
-**Performance Optimization Steps:**  
-- **Database:** Add appropriate indexes (clustered for primary keys, non-clustered on filters).  Use partial or covering indexes on heavy queries.  Optimize queries (avoid SELECT *, use LIMIT, prefer WHERE over HAVING).  
-- **Backend:** Cache results aggressively.  Use multi-threading or async I/O for concurrency if supported.  Profile hotspots with CPU/memory profilers.  
-- **Frontend:** Minify assets, defer non-critical JS, compress images, enable GZIP.  Use critical CSS, prefetch key resources.  
-- **API Design:** Return only needed fields to reduce payload (support `fields=` filtering).  Paginate large lists.  Support gzip compression.
+### Long Term
+- 📱 **Flutter mobile app** — larger touch targets, haptic feedback, offline model fallback
+- 👁️ **Fall detection** — continuous camera monitoring with automatic family alert
+- 🏥 **BPJS / healthcare integration** — appointment booking and lab results via Indonesian public health API
+- 🔈 **Wake word** — "Hei ElderAI, tolong…" — no screen tap needed
+- 🌍 **Regional language support** — auto-detect and respond in Javanese, Sundanese, Batak, and other regional languages
 
 ---
 
-```mermaid
-flowchart LR
-    subgraph Client/UI
-        Browser[User Browser] --> UI[Web UI/Frontend]
-    end
-    subgraph Backend
-        UI --> API[Backend API]
-        API --> DB[(Database)]
-        API --> Cache[(Cache/Redis)]
-        API --> ML[ML Model]
-        API --> Auth[(Auth Service)]
-    end
-    subgraph Observability
-        API --> Logs[Logging/Tracing]
-        API --> Metrics[Metrics/Monitoring]
-    end
-```
+## Built With
+
+| Layer | Technology |
+|---|---|
+| UI | [Streamlit](https://streamlit.io) |
+| LLM | [Gemini 2.5](https://ai.google.dev) (Flash-Lite · Flash · Pro) |
+| Orchestration | [LangChain](https://langchain.com) LCEL |
+| Embeddings | Gemini `embedding-001` |
+| Vector store | [FAISS](https://github.com/facebookresearch/faiss) |
+| STT | Gemini multimodal (inline audio) |
+| TTS | [gTTS](https://gtts.readthedocs.io) |
+| Database | SQLite with WAL mode + versioned migrations |
 
 ---
 
-## Team
+## Competition Context
 
-Built for **Maju Bareng AI 2026 · Hacktiv8 × Google x AVPN X Asian Development Bank** Final Project, a programme by [Hacktiv8](https://hacktiv8.com) in partnership with Google, AVPN, and Asian Development Bank, bringing AI education and real-world applications to Indonesia. Developed by Ahmad Bara Wirayudha.
+Built for **Maju Bareng AI 2025**, a programme by [Hacktiv8](https://hacktiv8.com) in partnership with Google, bringing AI education and real-world applications to Indonesia.
+
+---
+
+## License
+
+MIT — free to use, modify, and distribute.

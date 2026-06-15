@@ -29,3 +29,10 @@ python-dotenv>=1.0.1
 #   google-generativeai  — old SDK; now using google-genai everywhere
 #   langchain-huggingface / sentence-transformers / torch  — dead code (3 GB+)
 #   numpy  — transitive dep, not needed explicitly
+-e 
+# ── Testing ──────────────────────────────────────────────────
+pytest>=8.0
+
+# ── Family Dashboard charts ──────────────────────────────────
+plotly>=5.18.0
+pandas>=2.0.0
