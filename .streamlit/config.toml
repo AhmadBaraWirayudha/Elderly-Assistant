@@ -11,3 +11,19 @@ port                = 8501
 
 [browser]
 gatherUsageStats    = false
+
+# ─────────────────────────────────────────────────────────────
+# FOR LOCAL DEV: copy to .streamlit/secrets.toml (it is gitignored).
+# FOR STREAMLIT CLOUD: paste these keys into the Secrets panel
+#   (App → Settings → Secrets) — no file needed on the server.
+# ─────────────────────────────────────────────────────────────
+
+# Required: Gemini API key from https://aistudio.google.com/
+GEMINI_API_KEY = "INSERT_YOUR_KEY_HERE"
+
+# Optional: SHA-256 hash of your 4-digit PIN (default below = "1234")
+# Generate: python -c "import hashlib; print(hashlib.sha256(b'YOUR_PIN').hexdigest())"
+AUTH_PIN_HASH = "03ac674216f3e15c761ee1a5e255f067953623c8b388b4459e13f978d7c846f4"
+
+# Optional: TTS language code — "en" (English) or "id" (Bahasa Indonesia)
+TTS_LANG = "en"
