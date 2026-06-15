@@ -1,10 +1,10 @@
-# 🏠 ElderAI
+# Elderly Assistant, Simple AI Dashboard for Elderly
 
-**Maju Bareng AI 2025 · Hacktiv8 × Google**
+> **Maju Bareng AI 2026 · Hacktiv8 × Google x AVPN X Asian Development Bank**
+>
+> *Voice-first · Photo-aware · Single screen · Powered by Gemini 2.5*
 
-> Voice-first · Photo-aware · Single screen · Powered by Gemini 2.5
-
-A minimal AI companion built for elderly users — three big buttons, every answer spoken aloud, zero clutter.  Backed by Gemini 2.5, LangChain RAG, and FAISS, with a smart model router that keeps costs low on simple queries and escalates only when needed.
+A minimal AI companion built for elderly users; three big buttons, every answer spoken aloud, zero clutter.  Backed by Gemini 2.5, LangChain RAG, and FAISS, with a smart model router that keeps costs low on simple queries and escalates only when needed.
 
 ---
 
@@ -295,12 +295,26 @@ Tunables in `config.py` (not exposed as env vars):
 
 ---
 
-## Competition Context
-
-Built for **Maju Bareng AI 2025**, a programme by [Hacktiv8](https://hacktiv8.com) in partnership with Google, bringing AI education and real-world applications to Indonesia.
+```mermaid
+flowchart LR
+    subgraph Client/UI
+        Browser[User Browser] --> UI[Web UI/Frontend]
+    end
+    subgraph Backend
+        UI --> API[Backend API]
+        API --> DB[(Database)]
+        API --> Cache[(Cache/Redis)]
+        API --> ML[ML Model]
+        API --> Auth[(Auth Service)]
+    end
+    subgraph Observability
+        API --> Logs[Logging/Tracing]
+        API --> Metrics[Metrics/Monitoring]
+    end
+```
 
 ---
 
-## License
+## Team
 
-MIT — free to use, modify, and distribute.
+Built for **Maju Bareng AI 2026 · Hacktiv8 × Google x AVPN X Asian Development Bank** Final Project, a programme by [Hacktiv8](https://hacktiv8.com) in partnership with Google, AVPN, and Asian Development Bank, bringing AI education and real-world applications to Indonesia. Developed by Ahmad Bara Wirayudha.
