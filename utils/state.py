@@ -1,31 +1,39 @@
 """
 utils/state.py — Single init function called at the top of every Streamlit rerun.
 
-This is the only place default values are defined.  The pattern prevents
-KeyError on first render and avoids duplicate conditionals across the app.
+All session_state keys with their defaults live here.
+Avoids KeyError on first render and scattered st.session_state.get() calls everywhere.
 """
 from __future__ import annotations
 
+import uuid
+
 import streamlit as st
 
-# FIX: dict was named `DEFAULTS` but `init_state` referenced `_DEFAULTS` → NameError
-# FIX: `"conversation_history"` key was duplicated (second entry silently overwrote first)
-# FIX: `"tts_audio_path"` renamed to `"tts_audio"` to match app.py's usage
 _DEFAULTS: dict = {
+    # ── Auth ──────────────────────────────────────────────────
     "authenticated":          False,
-    "conversation_history":   [],     # list of (query: str, answer: str)
-    "messages":               [],
-    "tts_audio":              None,   # bytes | None — cleared after each play
-    "error_message":          None,   # str | None — rendered as error banner
-    "rag_chain":              None,   # LangChain chain object
-    "vectorstore":            None,   # FAISS vectorstore
-    "current_model":          "flash",
-    "last_query":             "",
-    "last_ack":               "",
-    "last_sources":           [],
+
+    # ── Conversation ──────────────────────────────────────────
+    "conversation_history":   [],      # list of (query: str, answer: str)
+    "session_id":             "",      # unique per browser session (set below)
+
+    # ── Audio / TTS ───────────────────────────────────────────
+    "tts_audio":              None,    # bytes | None — cleared after each play
+
+    # ── UI state ──────────────────────────────────────────────
+    "error_message":          None,    # str | None — renders error banner + stops UI
     "show_history":           False,
-    "knowledge_loaded":       False,
-    "pending_input":          "",
+
+    # ── Chain / model ─────────────────────────────────────────
+    "rag_chain":              None,    # cached via @st.cache_resource; ref stored here
+    "vectorstore":            None,    # same
+    "current_model":          "flash",
+
+    # ── Health checks ─────────────────────────────────────────
+    # FIX: these two keys were used in app.py but missing here → KeyError
+    "_health_checked":        False,
+    "_health_warnings":       [],
 }
 
 
@@ -34,3 +42,8 @@ def init_state() -> None:
     for key, val in _DEFAULTS.items():
         if key not in st.session_state:
             st.session_state[key] = val
+
+    # session_id must be unique per browser tab, not shared across sessions.
+    # Cannot use a static default in _DEFAULTS (uuid would be evaluated once at import).
+    if not st.session_state.get("session_id"):
+        st.session_state["session_id"] = uuid.uuid4().hex[:8]
