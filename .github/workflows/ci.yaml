@@ -1,0 +1,195 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+# Cancel redundant runs on the same branch
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── 1. Test & lint ──────────────────────────────────────────────────────────
+  test:
+    name: Test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Syntax-check all Python files
+        run: make lint
+
+      - name: Run test suite
+        run: python -m pytest tests/ -v --tb=short --junitxml=test-results.xml
+        env:
+          GEMINI_API_KEY: "INSERT_YOUR_KEY_HERE"   # placeholder — tests never call API
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-py${{ matrix.python-version }}
+          path: test-results.xml
+
+  # ── 2. Secret scan ──────────────────────────────────────────────────────────
+  secret-scan:
+    name: Secret Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Scan for accidentally committed secrets
+        run: |
+          echo "Scanning for API key patterns in committed files…"
+
+          # Patterns that look like real keys (not placeholders)
+          FOUND=$(grep -rn \
+            --include="*.py" --include="*.toml" --include="*.yml" \
+            --include="*.yaml" --include="*.json" --include="*.env" \
+            -E "(AIza[0-9A-Za-z_-]{35}|AQ\.[A-Za-z0-9_-]{20,}|sk-[A-Za-z0-9]{40,})" \
+            --exclude-dir=".git" \
+            . 2>/dev/null \
+            | grep -v "INSERT_YOUR_KEY_HERE" \
+            | grep -v "secrets.toml.example" \
+            | grep -v ".env.example" \
+            || true)
+
+          if [ -n "$FOUND" ]; then
+            echo "::error::Possible API key detected in committed files:"
+            echo "$FOUND"
+            exit 1
+          fi
+
+          echo "✅ No exposed secrets detected"
+
+  # ── 3. Dependency security audit ────────────────────────────────────────────
+  security:
+    name: Dependency Security Audit
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install pip-audit
+        run: pip install pip-audit
+
+      - name: Audit dependencies for known CVEs
+        # continue-on-error: transitive CVEs in large frameworks are common;
+        # treat as warning until manually reviewed.
+        run: |
+          pip-audit -r requirements.txt --skip-editable --output=json \
+            > audit-report.json 2>&1 || true
+          python3 -c "
+          import json, sys
+          try:
+              data = json.load(open('audit-report.json'))
+          except Exception:
+              print('audit output not JSON — see raw log')
+              sys.exit(0)
+          vulns = [d for d in data.get('dependencies', []) if d.get('vulns')]
+          if vulns:
+              print('::warning::Vulnerable dependencies found:')
+              for d in vulns:
+                  for v in d['vulns']:
+                      print(f\"  {d['name']}=={d['version']} — {v['id']}: {v['description'][:100]}\")
+          else:
+              print('✅ No known CVEs in direct dependencies')
+          "
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-audit
+          path: audit-report.json
+
+  # ── 4. Deploy readiness check (main branch only) ────────────────────────────
+  deploy-check:
+    name: Deploy Readiness
+    runs-on: ubuntu-latest
+    needs: [test, secret-scan]
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify .gitignore covers secrets
+        run: |
+          echo "Checking .gitignore covers sensitive files…"
+          MISSING=()
+          for f in ".env" ".streamlit/secrets.toml" "chat_history.db" "kb_index/"; do
+            if git check-ignore -q "$f" 2>/dev/null; then
+              echo "  ✅ $f is gitignored"
+            else
+              echo "  ::warning::$f is NOT gitignored"
+              MISSING+=("$f")
+            fi
+          done
+          [ ${#MISSING[@]} -eq 0 ] && echo "✅ All sensitive paths are gitignored"
+
+      - name: Verify all dependencies have version constraints
+        run: |
+          python3 -c "
+          lines = [l.strip() for l in open('requirements.txt')
+                   if l.strip() and not l.startswith('#')]
+          unpinned = [l for l in lines
+                      if '>=' not in l and '==' not in l and '~=' not in l]
+          if unpinned:
+              print('::warning::Unpinned dependencies:', unpinned)
+          else:
+              print('✅ All dependencies have version constraints')
+          "
+
+      - name: Check required files exist for deployment
+        run: |
+          for f in "app.py" "requirements.txt" "README.md" \
+                   ".env.example" ".streamlit/config.toml" \
+                   ".streamlit/secrets.toml.example"; do
+            if [ -f "$f" ]; then
+              echo "  ✅ $f"
+            else
+              echo "  ::error::Missing required file: $f"
+              exit 1
+            fi
+          done
+
+      - name: Set up Python for final check
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install and run full test suite one final time
+        run: |
+          pip install -r requirements.txt
+          python -m pytest tests/ -v --tb=short
+        env:
+          GEMINI_API_KEY: "INSERT_YOUR_KEY_HERE"
